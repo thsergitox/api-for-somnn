@@ -1,7 +1,4 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
-from typing import List
 import cv2
 from PIL import Image
 import numpy as np
@@ -9,6 +6,8 @@ from io import BytesIO
 import pickle
 
 app = FastAPI()
+som_model = None
+M = None
 
 # Cargar el modelo SOM entrenado y la matriz M
 try:
@@ -17,10 +16,11 @@ try:
     with open("M_matrix.pkl", "rb") as mf:
         M = pickle.load(mf)
 except Exception as e:
-    print(f"Error al cargar el modelo o la matriz M: {str(e)}")
+    raise Exception(f"Error al cargar el modelo o la matriz M: {str(e)}")
 
 
 def preprocess_image(image):
+    global som_model, M
     # Convertir a escala de grises si es necesario
     if len(image.shape) == 3:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -38,8 +38,10 @@ def preprocess_image(image):
 
 
 def predict_digit(image):
+    global som_model, M
     try:
-        # Preprocesar la imagen
+        # Preprocesar la imagen para hacerla coincidir con la entrada del modelo
+        # a un array 784
         processed_image = preprocess_image(image)
 
         # Obtener la neurona ganadora

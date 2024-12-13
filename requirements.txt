@@ -5,4 +5,4 @@ opencv-python-headless
 uvicorn[standard]
 python-multipart
 pillow
-pickle5
+minisom
